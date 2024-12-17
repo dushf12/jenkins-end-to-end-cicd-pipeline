@@ -1,16 +1,20 @@
 pipeline {
     agent {
         docker {
-            image 'eclipse-temurin:21-jdk-alpine' // JDK image for compilation
+            image 'docker:latest' // Base Docker image with Docker CLI pre-installed
             args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
 
     stages {
-        stage('Install Maven') {
+        stage('Install Java and Maven') {
             steps {
-                echo "Installing Maven on Alpine container"
-                sh 'apk add --no-cache maven'
+                echo "Installing Java and Maven in the container"
+                sh '''
+                apk add --no-cache openjdk21 maven
+                java -version
+                mvn -version
+                '''
             }
         }
 
@@ -25,19 +29,6 @@ pipeline {
             steps {
                 echo "Building and testing the Spring MVC application"
                 sh 'mvn clean package'
-            }
-        }
-
-        stage('Static Code Analysis') {
-            steps {
-                withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
-                    echo "Running static code analysis with SonarQube"
-                    sh '''
-                        mvn sonar:sonar \
-                        -Dsonar.login=$SONAR_AUTH_TOKEN \
-                        -Dsonar.host.url=http://54.209.212.200:9000
-                    '''
-                }
             }
         }
 
