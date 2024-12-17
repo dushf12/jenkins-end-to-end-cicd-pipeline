@@ -10,7 +10,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                echo "Checking out source code from GitH usb"
+                echo "Checking out source code from Git usb"
             }
         }
 
