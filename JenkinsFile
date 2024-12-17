@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'eclipse-temurin:21-jre-alpine' // Alpine-based Java 21 image
+            image 'eclipse-temurin:21-jdk-alpine' // JDK image for compilation
             args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
