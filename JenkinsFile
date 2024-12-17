@@ -1,20 +1,16 @@
 pipeline {
     agent {
         docker {
-            image 'docker:latest' // Base Docker image with Docker CLI pre-installed
+            image 'eclipse-temurin:21-jdk-alpine' // JDK image for compilation
             args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
 
     stages {
-        stage('Install Java and Maven') {
+        stage('Install Maven') {
             steps {
-                echo "Installing Java and Maven in the container"
-                sh '''
-                apk add --no-cache openjdk21 maven
-                java -version
-                mvn -version
-                '''
+                echo "Installing Maven on Alpine container"
+                sh 'apk add --no-cache maven'
             }
         }
 
@@ -36,8 +32,8 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker image"
-                    sh 'docker build -f jenkins-end-to-end-cicd-pipeline/DockerFile -t dushf12/spring-mvc-app:${BUILD_NUMBER} .'
-
+                    // Assuming Dockerfile is in the root of the repository
+                    sh 'docker build -t dushf12/spring-mvc-app:${BUILD_NUMBER} .'
 
                     echo "Pushing Docker image to Docker Hub"
                     docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
@@ -54,7 +50,6 @@ pipeline {
                     sh '''
                         git config user.email "dushf12@gmail.com"
                         git config user.name "dushf12"
-
                         sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" path/to/deployment.yml
                         git add path/to/deployment.yml
                         git commit -m "Update deployment image to version ${BUILD_NUMBER}"
@@ -74,3 +69,4 @@ pipeline {
         }
     }
 }
+
