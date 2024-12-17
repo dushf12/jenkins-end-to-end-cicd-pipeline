@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-mvc-app
+  labels:
+    app: spring-mvc-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: spring-mvc-app
+  template:
+    metadata:
+      labels:
+        app: spring-mvc-app
+    spec:
+      containers:
+      - name: spring-mvc-app
+        # Use your Docker Hub username and the image tag with the build number
+        image: dushf12/spring-mvc-app:replaceImageTag
+        ports:
+        - containerPort: 8080
