@@ -17,7 +17,7 @@ pipeline {
             steps {
                 echo "Checking out source code from GitHub..."
                 git branch: 'main', url: 'https://github.com/dushf12/jenkins-end-to-end-cicd-pipeline.git'
-                sh 'ls -la' // Debug: List workspace files
+                sh 'ls -la' // Debug: List files in the workspace to verify DockerFile exists
             }
         }
 
@@ -31,14 +31,17 @@ pipeline {
         stage('Build and Push Docker Image') {
             steps {
                 script {
-                    echo "Building Docker image..."
+                    echo "Checking for DockerFile in workspace..."
                     sh '''
-                        if [ ! -f Dockerfile ]; then
-                            echo "Error: Dockerfile not found in workspace!"
+                        ls -la
+                        if [ ! -f DockerFile ]; then
+                            echo "Error: DockerFile not found in the workspace!"
                             exit 1
                         fi
-                        docker build -t ${DOCKER_IMAGE} .
                     '''
+
+                    echo "Building Docker image..."
+                    sh 'docker build -f DockerFile -t ${DOCKER_IMAGE} .'
 
                     echo "Pushing Docker image to Docker Hub..."
                     docker.withRegistry("${DOCKER_REGISTRY_URL}", 'docker-cred') {
@@ -78,6 +81,7 @@ pipeline {
         }
     }
 }
+
 
 
 
