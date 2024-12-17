@@ -1,29 +1,24 @@
 pipeline {
     agent {
-    docker {
-        image 'openjdk:21' // Use the official Debian-based OpenJDK 21 image
-        args '--user root -v /var/run/docker.sock:/var/run/docker.sock' // Mount Docker socket
+        docker {
+            image 'openjdk:21' // Debian-based Java 21 image
+            args '--user root -v /var/run/docker.sock:/var/run/docker.sock' // Mount Docker socket
+        }
     }
-}
 
     environment {
-        // Environment variables
-        DOCKER_REGISTRY = "docker.io"
-        DOCKER_IMAGE = "dushf12/spring-mvc-app:${BUILD_NUMBER}" // Docker image name with build tag
-        SONAR_URL = "http://54.209.212.200:9000" // SonarQube server address
-        REGISTRY_CREDENTIALS = credentials('docker-cred')
+        DOCKER_IMAGE = "dushf12/spring-mvc-app:${BUILD_NUMBER}"
+        SONAR_URL = "http://54.209.212.200:9000"
     }
 
     stages {
-        // Install Maven in the Docker container (required for Alpine base image)
         stage('Install Maven') {
             steps {
-                echo "Installing Maven on Alpine container"
-                sh 'apk add --no-cache maven'
+                echo "Installing Maven on Debian container"
+                sh 'apt-get update && apt-get install -y maven'
             }
         }
 
-        // Checkout the code from the GitHub repository
         stage('Checkout') {
             steps {
                 echo "Checking out source code from GitHub"
@@ -31,7 +26,6 @@ pipeline {
             }
         }
 
-        // Build and test the Spring MVC application
         stage('Build and Test') {
             steps {
                 echo "Building and testing the Spring MVC application"
@@ -39,7 +33,6 @@ pipeline {
             }
         }
 
-        // Perform static code analysis with SonarQube
         stage('Static Code Analysis') {
             steps {
                 withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
@@ -53,7 +46,6 @@ pipeline {
             }
         }
 
-        // Build and push the Docker image to Docker Hub
         stage('Build and Push Docker Image') {
             steps {
                 script {
@@ -68,12 +60,7 @@ pipeline {
             }
         }
 
-        // Update the Kubernetes deployment file with the new image tag
         stage('Update Deployment File') {
-            environment {
-                GIT_REPO_NAME = "jenkins-end-to-end-cicd-pipeline"
-                GIT_USER_NAME = "dushf12"
-            }
             steps {
                 withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
                     echo "Updating deployment file with new Docker image tag"
@@ -81,13 +68,10 @@ pipeline {
                         git config user.email "dushf12@gmail.com"
                         git config user.name "dushf12"
 
-                        # Replace image tag in deployment.yml
                         sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" path/to/deployment.yml
-
-                        # Commit and push changes back to GitHub
                         git add path/to/deployment.yml
                         git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                        git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                        git push https://${GITHUB_TOKEN}@github.com/dushf12/jenkins-end-to-end-cicd-pipeline HEAD:main
                     '''
                 }
             }
