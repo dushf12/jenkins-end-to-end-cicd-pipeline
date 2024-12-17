@@ -7,12 +7,6 @@ pipeline {
     }
 
     stages {
-        stage('Install Maven') {
-            steps {
-                echo "Installing Maven on Alpine container"
-                sh 'apk add --no-cache maven'
-            }
-        }
 
         stage('Checkout') {
             steps {
