@@ -1,16 +1,23 @@
 pipeline {
     agent {
         docker {
-            image 'lalith425/lalith-doc-mav-jdj:5.0'
+            image 'eclipse-temurin:21-jdk-alpine' // JDK image for compilation
             args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
 
     stages {
+        stage('Install Maven') {
+            steps {
+                echo "Installing Maven on Alpine container"
+                sh 'apk add --no-cache maven'
+            }
+        }
 
         stage('Checkout') {
             steps {
-                echo "Checking out source code from Git usb"
+                echo "Checking out source code from GitHub"
+                git branch: 'main', url: 'https://github.com/dushf12/jenkins-end-to-end-cicd-pipeline.git'
             }
         }
 
@@ -62,4 +69,5 @@ pipeline {
         }
     }
 }
+
 
