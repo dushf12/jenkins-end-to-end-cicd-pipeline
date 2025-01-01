@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: spring-mvc-app
-        # Use your Docker Hub username and the image tag with the build number
+       
         image: dushf12/spring-mvc-app:replaceImageTag
         ports:
         - containerPort: 8080
